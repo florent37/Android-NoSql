@@ -13,16 +13,16 @@ dependencies {
 
 Save your datas as a structured tree
 
-[java]
+```java
 noSql.put("/users/", "florent")
 noSql.put("/users/", "kevin")
 nosql.put("/identifiers/florent", 10)
 nosql.put("/identifiers/kevin", 12)
-[/java]
+```
 
 The data structure will be
 
-[json]
+```java
 /
     users/
           "florent"
@@ -32,19 +32,19 @@ The data structure will be
                         10
                 kevin/
                         12
-[/json]
+```
 
 It'll be simple to search data
 
-[json]
+```java
 int myId = noSql.get("/identifiers/florent/").integer();
-[/json]
+```
 
 # Serialize objects 
 
 You can simply add nodes from POJOS
 
-[java]
+```java
 final User user = new User(
                 "flo",
                 new House("paris"),
@@ -52,9 +52,9 @@ final User user = new User(
         );
 
 noSql.put("/user/florent/", user);
-[/java]
+```
 
-[json]
+```java
 /
     users/
           florent/
@@ -70,21 +70,21 @@ noSql.put("/user/florent/", user);
                        1/
                          model/
                                "ford gt"
-[/json]
+```
 
 # Get Objects from node
  
 Or fetch nodes directly into Java Objects
  
-[java]
+```java
 User user = noSql.get("/user/florent/", User.class);
-[/java]
+```
 
 # Initialisation
 
 Android-NoSql need DataSavers to store your objets
 
-[java]
+```java
 public class MainApplication extends Application {
 
     @Override
@@ -96,7 +96,7 @@ public class MainApplication extends Application {
         );
     }
 }
-[/java]
+```
 
 It means you can store your data into SharedPreference, or SqlDatabase, or any storage library your want ;)
 
