@@ -24,14 +24,14 @@ The data structure will be
 
 ```java
 /
-    users/
-          "florent"
-          "kevin"
-    identifiers/
-                florent/
-                        10
-                kevin/
-                        12
+---users/
+      ---"florent"
+      ---"kevin"
+---identifiers/
+      ---florent/
+             ---10
+      ---kevin/
+             ---12
 ```
 
 It'll be simple to search data
