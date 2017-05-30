@@ -18,7 +18,7 @@ public class NoSql {
 
     public static final String PATH_SEPARATOR = "/";
     private static NoSql INSTANCE;
-    public Map<String, Reference<Listener>> listeners = new HashMap<>();
+    private Map<String, Reference<Listener>> listeners = new HashMap<>();
     private Node root;
 
     public boolean autoSave = true;

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
+import com.github.florent37.androidnosql.Listener;
 import com.github.florent37.androidnosql.NoSql;
 
 import java.util.Arrays;
@@ -30,6 +31,13 @@ public class MainActivity extends AppCompatActivity {
                 Arrays.asList(3, 5),
                 Arrays.asList(new Car("chevrolet", "camaro"), new Car("ford", "gt"))
         );
+
+        noSql.notify("/user/", new Listener() {
+            @Override
+            public void nodeChanged(String path, NoSql.Value value) {
+
+            }
+        });
 
         noSql.put("/user/florent/", user);
 

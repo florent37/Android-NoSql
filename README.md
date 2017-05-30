@@ -80,7 +80,23 @@ Or fetch nodes directly into Java Objects
 User user = noSql.get("/user/florent/", User.class);
 ```
 
-# Initialisation
+# Listeners
+
+You can listen for nodes updates
+
+```java
+noSql.notify("/user/", new Listener() {
+            @Override
+            public void nodeChanged(String path, NoSql.Value value) {
+                //notified when :
+                // - the node is created
+                // - the node is deleted
+                // - a subnode is added / updated
+             }
+        });
+```
+
+# Init
 
 Android-NoSql need DataSavers to store your objets
 
