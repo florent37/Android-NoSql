@@ -116,7 +116,7 @@ public class MainApplication extends Application {
 
 It means you can store your data into SharedPreference, or SqlDatabase, or any storage library your want ;)
 
-# Credits
+# Credits   
 
 Author: Florent Champigny [http://www.florentchampigny.com/](http://www.florentchampigny.com/)
 
