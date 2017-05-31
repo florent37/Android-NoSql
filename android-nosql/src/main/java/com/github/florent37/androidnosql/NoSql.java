@@ -59,7 +59,7 @@ public class NoSql {
     private Node getOrCreate(Node node, String name) {
         if (node.has(name)) {
             if(node.get(name) instanceof Node) {
-                return node.getNode(name);
+                return node.child(name);
             } else {
                 return null;
             }
@@ -105,7 +105,7 @@ public class NoSql {
         return Pair.create(node, nodeDescritption.name);
     }
 
-    void load() {
+    public void load() {
         final Collection<DataSaver> dataSavers = AndroidNoSql.getDataSaver();
         if (!dataSavers.isEmpty()) {
             for (DataSaver dataSaver : dataSavers) {
@@ -325,8 +325,8 @@ public class NoSql {
             return values.keySet();
         }
 
-        public Collection<Node> childNodes() {
-            final Collection<Node> nodes = new ArrayList<>();
+        public List<Node> childNodes() {
+            final List<Node> nodes = new ArrayList<>();
             for (String key : keys()) {
                 final Object child = values.get(key);
                 if(child instanceof Node){
@@ -336,7 +336,7 @@ public class NoSql {
             return nodes;
         }
 
-        public Node getNode(String key) {
+        public Node child(String key) {
             return ((Node) get(key));
         }
 

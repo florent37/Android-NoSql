@@ -56,20 +56,20 @@ noSql.put("/user/florent/", user);
 
 ```java
 /
-    users/
-          florent/
-                  name/
-                       "flo"
-                  house/
-                        adress/
-                               "paris"
-                  cars/
-                       0/
-                         model/
-                               "chevrolet camaro"
-                       1/
-                         model/
-                               "ford gt"
+ ---users/
+       ---florent/
+               ---name/
+                    ---"flo"
+               ---house/
+                    ---adress/
+                           ---"paris"
+               ---cars/
+                    ---0/
+                      ---model/
+                            ---"chevrolet camaro"
+                    ---1/
+                      ---model/
+                            ---"ford gt"
 ```
 
 # Get Objects from node
@@ -78,6 +78,16 @@ Or fetch nodes directly into Java Objects
  
 ```java
 User user = noSql.get("/user/florent/", User.class);
+```
+
+# Navigate
+
+```java
+noSql.node("/identifiers/")
+     .child("florent")
+     .childNodes()
+     .get(1)
+     .put("country", "france");
 ```
 
 # Listeners
