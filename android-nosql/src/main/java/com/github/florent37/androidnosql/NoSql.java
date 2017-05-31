@@ -295,7 +295,7 @@ public class NoSql {
         return get(path).node();
     }
 
-    public static class Node {
+    public class Node {
         private final String path;
         private final Map<String, Object> values;
 
@@ -342,6 +342,9 @@ public class NoSql {
 
         public void put(String name, Object node) {
             values.put(name, node);
+            if(autoSave){
+                save(AndroidNoSql.getDataSaver());
+            }
         }
 
         public void save(Collection<DataSaver> dataSaver) {
