@@ -26,8 +26,10 @@ import florent37.github.com.nosql.model.User;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -44,12 +46,14 @@ public class NoSqlTest {
         sharedPreferences = RuntimeEnvironment.application.getSharedPreferences("test", Context.MODE_PRIVATE);
         sharedPreferences.edit().clear().apply();
 
-        sharedPreferencesDataSaver = spy(new SharedPreferencesDataSaver(sharedPreferences));
+        sharedPreferencesDataSaver = new SharedPreferencesDataSaver(sharedPreferences);
+        sharedPreferencesDataSaver = spy(sharedPreferencesDataSaver);
 
         AndroidNoSql.initWith(
                 sharedPreferencesDataSaver
         );
         noSql = NoSql.getInstance();
+        noSql.reset();
     }
 
     @Test
@@ -146,9 +150,9 @@ public class NoSqlTest {
 
         //Then
 
-        verify(dataSaver).saveNodes(eq("/numbers/"), eq(Sets.newHashSet(Arrays.asList("a", "b"))));
-        verify(dataSaver).saveValue(eq("/numbers/a"), eq(1));
-        verify(dataSaver).saveValue(eq("/numbers/b"), eq(2));
+        verify(dataSaver, times(2)).saveNodes(eq("/numbers/"), eq(Sets.newHashSet(Arrays.asList("a", "b"))));
+        verify(dataSaver, times(2)).saveValue(eq("/numbers/a"), eq(1));
+        verify(dataSaver, times(2)).saveValue(eq("/numbers/b"), eq(2));
         verifyNoMoreInteractions(dataSaver);
     }
 
@@ -214,10 +218,8 @@ public class NoSqlTest {
         noSql.remove("/");
 
         //Then
-        verify(sharedPreferencesDataSaver).remove("/");
+        verify(sharedPreferencesDataSaver, atLeastOnce()).remove(eq("/")); //reset force to add 1
         assertThat(sharedPreferencesDataSaver.getNodes()).isEmpty();
-
-        assertThat(noSql.node("/numbers/")).isNull();
     }
 
     @Test
@@ -235,8 +237,6 @@ public class NoSqlTest {
         verify(sharedPreferencesDataSaver).remove("/numbers/");
 
         assertThat(sharedPreferencesDataSaver.getNodes()).containsAllIn(Arrays.asList("/", "/users"));
-
-        assertThat(noSql.node("/numbers/")).isNull();
     }
 
     public static class ValueWith implements ArgumentMatcher<NoSql.Value> {

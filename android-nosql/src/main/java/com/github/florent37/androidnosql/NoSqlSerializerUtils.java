@@ -12,7 +12,7 @@ import java.util.Set;
  */
 
 public class NoSqlSerializerUtils {
-    public static boolean isAcceptableObject(Object object) {
+    public static boolean isValueObject(Object object) {
         return isPrimitiveObject(object) ||
                 object instanceof NoSql.Node;
     }

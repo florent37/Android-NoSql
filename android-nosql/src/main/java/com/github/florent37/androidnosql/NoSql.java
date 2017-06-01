@@ -2,26 +2,30 @@ package com.github.florent37.androidnosql;
 
 import android.util.Pair;
 
+import com.github.florent37.androidnosql.datasaver.DataSaver;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.github.florent37.androidnosql.datasaver.DataSaver;
 
 public class NoSql {
 
     public static final String PATH_SEPARATOR = "/";
     private static NoSql INSTANCE;
+    public boolean autoSave = true;
     private Map<String, Reference<Listener>> listeners = new HashMap<>();
     private Node root;
-
-    public boolean autoSave = true;
 
     private NoSql() {
         root = new Node("");
@@ -36,9 +40,7 @@ public class NoSql {
 
     private Node getNodeOrCreate(String completeFieldPath) {
         final Pair<Node, String> nodeDesc = getNode(completeFieldPath);
-        final Node node = getOrCreate(nodeDesc.first, nodeDesc.second);
-
-        return node;
+        return getOrCreate(nodeDesc.first, nodeDesc.second);
     }
 
     public NoSql remove(String path) {
@@ -48,7 +50,7 @@ public class NoSql {
             final Pair<Node, String> nodeDesc = getNode(path);
             nodeDesc.first.remove(nodeDesc.second);
         }
-        if(autoSave) {
+        if (autoSave) {
             for (DataSaver dataSaver : AndroidNoSql.getDataSaver()) {
                 dataSaver.remove(path);
             }
@@ -58,7 +60,7 @@ public class NoSql {
 
     private Node getOrCreate(Node node, String name) {
         if (node.has(name)) {
-            if(node.get(name) instanceof Node) {
+            if (node.get(name) instanceof Node) {
                 return node.child(name);
             } else {
                 return null;
@@ -122,7 +124,13 @@ public class NoSql {
         }
     }
 
-    public NoSql clearDataSavers(){
+    public NoSql reset(){
+        root = new Node("");
+        clearDataSavers();
+        return this;
+    }
+
+    public NoSql clearDataSavers() {
         AndroidNoSql.clearDataSavers();
         return this;
     }
@@ -133,72 +141,34 @@ public class NoSql {
         return this;
     }
 
+    /*
+    public NoSql putXml(String uri, Object value) {
+
+    }
+    */
+
     public NoSql put(String uri, Object value) {
         final Pair<Node, String> node_and_name = getNode(uri);
         final Node node = node_and_name.first;
         final String name = node_and_name.second;
 
-        if (NoSqlSerializerUtils.isAcceptableObject(value)) {
+        if (NoSqlSerializerUtils.isValueObject(value)) {
             node.put(name, value);
             notifyListeners(node.path + PATH_SEPARATOR + name);
         } else {
-            write(getOrCreate(node, name), value, true);
+            getOrCreate(node, name).write(value);
         }
 
-        if(autoSave){
+        if (autoSave) {
             node.save(AndroidNoSql.getDataSaver());
         }
 
         return this;
     }
 
-    private void write(Node node, Object value, boolean willSave) {
-        final Set<Field> allFields = NoSqlSerializerUtils.getAllFields(value.getClass());
-        for (Field field : allFields) {
-            field.setAccessible(true);
-
-            try {
-                final String fieldName = field.getName();
-                final Object fieldValue = field.get(value);
-                if (fieldValue != null) {
-
-                    final String completePath = node.path + PATH_SEPARATOR + fieldName;
-
-                    if (NoSqlSerializerUtils.isAcceptableObject(fieldValue)) {
-                        node.put(fieldName, fieldValue);
-                        notifyListeners(completePath);
-                    } else {
-                        final Node node1 = new Node(completePath);
-                        node.put(fieldName, node1);
-                        if (NoSqlSerializerUtils.isCollection(field)) {
-                            final Iterable collection = (Iterable) field.get(value);
-                            int index = 0;
-                            for (Object o : collection) {
-                                put(node1.path + PATH_SEPARATOR + index, o);
-                                index++;
-                            }
-                        } else if (NoSqlSerializerUtils.isArray(field)) {
-                            final Object[] array = (Object[]) field.get(value);
-                            int index = 0;
-                            for (Object o : array) {
-                                put(node1.path + PATH_SEPARATOR + index, o);
-                                index++;
-                            }
-                        } else {
-                            write(node1, fieldValue, false);
-                        }
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        notifyListeners(node.path);
-    }
-
-    private void notifyListeners(String path){
+    private void notifyListeners(String path) {
         for (String key : listeners.keySet()) {
-            if(path.startsWith(key)){
+            if (path.startsWith(key)) {
                 final Reference<Listener> listener = listeners.get(key);
                 if (listener != null) {
                     final Listener listenerValue = listener.get();
@@ -292,97 +262,7 @@ public class NoSql {
     }
 
     public Node node(String path) {
-        return get(path).node();
-    }
-
-    public class Node {
-        private final String path;
-        private final Map<String, Object> values;
-
-        public Node(String path) {
-            this.path = path;
-            this.values = new HashMap<>();
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        @Override
-        public String toString() {
-            return path +" - " + values.toString();
-        }
-
-        public Object get(String key) {
-            return values.get(key);
-        }
-
-        public boolean has(String key) {
-            return values.containsKey(key);
-        }
-
-        public Collection<String> keys() {
-            return values.keySet();
-        }
-
-        public List<Node> childNodes() {
-            final List<Node> nodes = new ArrayList<>();
-            for (String key : keys()) {
-                final Object child = values.get(key);
-                if(child instanceof Node){
-                    nodes.add((Node) child);
-                }
-            }
-            return nodes;
-        }
-
-        public Node child(String key) {
-            return ((Node) get(key));
-        }
-
-        public void put(String name, Object node) {
-            values.put(name, node);
-            if(autoSave){
-                save(AndroidNoSql.getDataSaver());
-            }
-        }
-
-        public void save(Collection<DataSaver> dataSaver) {
-            {
-                //save keys
-                final String p = path + "/";
-                final Set<String> keys = values.keySet();
-                for (DataSaver saver : dataSaver) {
-                    saver.saveNodes(p, keys);
-                }
-            }
-
-
-            for (final String key : values.keySet()) {
-                final Object value = values.get(key);
-
-                final String completePath = path + PATH_SEPARATOR + key;
-                if (NoSqlSerializerUtils.isPrimitiveObject(value)) {
-                    for (DataSaver saver : dataSaver) {
-                        saver.saveValue(completePath, value);
-                    }
-                } else if (value instanceof Node) {
-                    ((Node) value).save(dataSaver);
-                }
-            }
-        }
-
-        public void remove(String key) {
-            this.values.remove(key);
-        }
-
-        public void removeAll() {
-            this.values.clear();
-        }
-
-        public Value value(String key) {
-            return new Value(get(key));
-        }
+        return getNodeOrCreate(path);
     }
 
     public static class Value {
@@ -426,6 +306,195 @@ public class NoSql {
         @Override
         public String toString() {
             return object.toString();
+        }
+    }
+
+    public class Node {
+        private final String path;
+        private final Map<String, Object> values;
+
+        public Node(String path) {
+            this.path = path;
+            this.values = new HashMap<>();
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        @Override
+        public String toString() {
+            return path + " - " + values.toString();
+        }
+
+        public Object get(String key) {
+            if (values.containsKey(key)) {
+                return values.get(key);
+            } else {
+                final Node node = new Node(path + PATH_SEPARATOR + key);
+                values.put(key, node);
+                return node;
+            }
+        }
+
+        public boolean has(String key) {
+            return values.containsKey(key);
+        }
+
+        public Collection<String> keys() {
+            return values.keySet();
+        }
+
+        public List<Node> childNodes() {
+            final List<Node> nodes = new ArrayList<>();
+            for (String key : keys()) {
+                final Object child = values.get(key);
+                if (child instanceof Node) {
+                    nodes.add((Node) child);
+                }
+            }
+            return nodes;
+        }
+
+        public Node child(String key) {
+            return ((Node) get(key));
+        }
+
+        public void put(String name, Object node) {
+            values.put(name, node);
+            if (autoSave) {
+                save(AndroidNoSql.getDataSaver());
+            }
+        }
+
+        public void save(Collection<DataSaver> dataSaver) {
+            {
+                //save keys
+                final String p = path + "/";
+                final Set<String> keys = values.keySet();
+                for (DataSaver saver : dataSaver) {
+                    saver.saveNodes(p, keys);
+                }
+            }
+
+
+            for (final String key : values.keySet()) {
+                final Object value = values.get(key);
+
+                final String completePath = path + PATH_SEPARATOR + key;
+                if (NoSqlSerializerUtils.isPrimitiveObject(value)) {
+                    for (DataSaver saver : dataSaver) {
+                        saver.saveValue(completePath, value);
+                    }
+                } else if (value instanceof Node) {
+                    ((Node) value).save(dataSaver);
+                }
+            }
+        }
+
+        public void remove(String key) {
+            this.values.remove(key);
+        }
+
+        public void removeAll() {
+            this.values.clear();
+        }
+
+        public Value value(String key) {
+            return new Value(get(key));
+        }
+
+        protected void write(Object value) {
+            if (value instanceof JSONObject) { //json object
+                final JSONObject jsonObject = (JSONObject) value;
+                final Iterator<String> keys = jsonObject.keys();
+                while (keys.hasNext()) {
+                    final String key = keys.next();
+                    try {
+                        final Object childObject = jsonObject.get(key);
+                        if (NoSqlSerializerUtils.isValueObject(childObject)) {
+                            put(key, childObject);
+                            notifyListeners(key);
+                        } else {
+                            child(key).write(childObject);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else if (value instanceof JSONArray) { //json array
+                final JSONArray jsonArray = (JSONArray) value;
+                final int length = jsonArray.length();
+                for (int i = 0; i < length; ++i) {
+                    try {
+                        final Object childObject = jsonArray.get(i);
+                        final String key = String.valueOf(i);
+
+                        if (NoSqlSerializerUtils.isValueObject(childObject)) {
+                            put(key, childObject);
+                            notifyListeners(key);
+                        } else {
+                            child(key).write(childObject);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else { //custom object, write all fields
+                final Set<Field> allFields = NoSqlSerializerUtils.getAllFields(value.getClass());
+                for (Field field : allFields) {
+                    field.setAccessible(true);
+
+                    try {
+                        final String fieldName = field.getName();
+                        final Object fieldValue = field.get(value);
+                        if (fieldValue != null) {
+
+                            final String completePath = path + PATH_SEPARATOR + fieldName;
+
+                            if (NoSqlSerializerUtils.isValueObject(fieldValue)) {
+                                put(fieldName, fieldValue);
+                                notifyListeners(completePath);
+                            } else {
+                                final Node node1 = new Node(completePath);
+                                put(fieldName, node1);
+                                if (NoSqlSerializerUtils.isCollection(field)) {
+                                    final Iterable collection = (Iterable) field.get(value);
+                                    int index = 0;
+                                    for (Object childObject : collection) {
+                                        final String key = String.valueOf(index);
+                                        if (NoSqlSerializerUtils.isValueObject(childObject)) {
+                                            node1.put(key, childObject);
+                                            notifyListeners(key);
+                                        } else {
+                                            node1.child(key).write(childObject);
+                                        }
+                                        index++;
+                                    }
+                                } else if (NoSqlSerializerUtils.isArray(field)) {
+                                    final Object[] array = (Object[]) field.get(value);
+                                    int index = 0;
+                                    for (Object childObject : array) {
+                                        final String key = String.valueOf(index);
+                                        if (NoSqlSerializerUtils.isValueObject(childObject)) {
+                                            node1.put(key, childObject);
+                                            notifyListeners(key);
+                                        } else {
+                                            node1.child(key).write(childObject);
+                                        }
+                                        index++;
+                                    }
+                                } else {
+                                    node1.write(fieldValue);
+                                }
+                            }
+                        }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            notifyListeners(path);
         }
     }
 
