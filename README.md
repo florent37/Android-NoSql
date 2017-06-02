@@ -108,7 +108,7 @@ noSql.notify("/user/", new Listener() {
 
 # Init
 
-Android-NoSql need DataSavers to store your objets
+Android-NoSql need to be initialized to store your objets
 
 ```java
 public class MainApplication extends Application {
@@ -117,14 +117,12 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        AndroidNoSql.initWith(
-                new SharedPreferencesDataSaver(getSharedPreferences("test", Context.MODE_PRIVATE))
-        );
+        AndroidNoSql.initWithDefault(context);
     }
 }
 ```
 
-It means you can store your data into SharedPreference, or SqlDatabase, or any storage library your want ;)
+You can also define the datasavers using initWith, it means you can store your data into SqlDatabase, or any storage library your want ;)
 
 # Credits   
 
