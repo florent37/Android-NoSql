@@ -22,7 +22,7 @@ ext{
     minSdkVersion = 14
     sourceCompatibilityVersion = JavaVersion.VERSION_1_7
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
-    supportVersion = "21.0.0"
+    supportVersion = "25.0.0"
 
     libraryVersion = "1.0.0"
 }
