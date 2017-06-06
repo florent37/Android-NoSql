@@ -1,7 +1,14 @@
 package florent37.github.com.nosql;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.github.florent37.androidnosql.AndroidNoSql;
+import com.github.florent37.androidnosql.Listener;
+import com.github.florent37.androidnosql.NoSql;
+import com.github.florent37.androidnosql.datasaver.DataSaver;
+import com.github.florent37.androidnosql.datasaver.SharedPreferencesDataSaver;
 
 import org.assertj.core.util.Sets;
 import org.junit.Before;
@@ -14,11 +21,7 @@ import org.robolectric.annotation.Config;
 
 import java.util.Arrays;
 
-import com.github.florent37.androidnosql.AndroidNoSql;
-import com.github.florent37.androidnosql.Listener;
-import com.github.florent37.androidnosql.NoSql;
-import com.github.florent37.androidnosql.datasaver.DataSaver;
-import com.github.florent37.androidnosql.datasaver.SharedPreferencesDataSaver;
+import florent37.github.com.androidnosql.paper.PaperDataSaver;
 import florent37.github.com.nosql.model.Car;
 import florent37.github.com.nosql.model.House;
 import florent37.github.com.nosql.model.User;
@@ -35,22 +38,24 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class)
-public class NoSqlTest {
+public class SharedPrefsTest {
 
     private NoSql noSql;
     private SharedPreferences sharedPreferences;
-    private SharedPreferencesDataSaver sharedPreferencesDataSaver;
+    private DataSaver dataSaver;
 
     @Before
     public void setUp() throws Exception {
-        sharedPreferences = RuntimeEnvironment.application.getSharedPreferences("test", Context.MODE_PRIVATE);
+        final Application application = RuntimeEnvironment.application;
+        sharedPreferences = application.getSharedPreferences("test", Context.MODE_PRIVATE);
         sharedPreferences.edit().clear().apply();
 
-        sharedPreferencesDataSaver = new SharedPreferencesDataSaver(sharedPreferences);
-        sharedPreferencesDataSaver = spy(sharedPreferencesDataSaver);
+        //dataSaver = new SharedPreferencesDataSaver(sharedPreferences);
+        dataSaver = new PaperDataSaver(application);
+        dataSaver = spy(dataSaver);
 
         AndroidNoSql.initWith(
-                sharedPreferencesDataSaver
+                dataSaver
         );
         noSql = NoSql.getInstance();
         noSql.reset();
@@ -218,8 +223,8 @@ public class NoSqlTest {
         noSql.remove("/");
 
         //Then
-        verify(sharedPreferencesDataSaver, atLeastOnce()).remove(eq("/")); //reset force to add 1
-        assertThat(sharedPreferencesDataSaver.getNodes()).isEmpty();
+        verify(dataSaver, atLeastOnce()).remove(eq("/")); //reset force to add 1
+        assertThat(dataSaver.getNodes()).isEmpty();
     }
 
     @Test
@@ -234,9 +239,9 @@ public class NoSqlTest {
         noSql.remove("/numbers/");
 
         //Then
-        verify(sharedPreferencesDataSaver).remove("/numbers/");
+        verify(dataSaver).remove("/numbers/");
 
-        assertThat(sharedPreferencesDataSaver.getNodes()).containsAllIn(Arrays.asList("/", "/users"));
+        assertThat(dataSaver.getNodes()).containsAllIn(Arrays.asList("/", "/users"));
     }
 
     public static class ValueWith implements ArgumentMatcher<NoSql.Value> {

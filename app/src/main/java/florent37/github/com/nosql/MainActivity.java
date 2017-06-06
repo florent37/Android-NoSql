@@ -1,7 +1,7 @@
 package florent37.github.com.nosql;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import com.github.florent37.androidnosql.Listener;
@@ -13,7 +13,7 @@ import florent37.github.com.nosql.model.Car;
 import florent37.github.com.nosql.model.House;
 import florent37.github.com.nosql.model.User;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     TextView textView;
 

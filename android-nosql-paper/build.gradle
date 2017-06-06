@@ -1,0 +1,35 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion project.COMPILE_SDK
+    buildToolsVersion project.BUILD_TOOL
+
+    defaultConfig {
+        minSdkVersion project.minSdkVersion
+        targetSdkVersion project.TARGET_SDK
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:'+project.supportVersion
+    testCompile 'junit:junit:4.12'
+
+    compile 'io.paperdb:paperdb:2.1'
+
+    compile project(path: ':android-nosql')
+}
