@@ -4,6 +4,8 @@ Lightweight, simple structured NoSQL database for Android
 
 # Download
 
+<a href='https://ko-fi.com/A160LCC' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi1.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
 [ ![Download](https://api.bintray.com/packages/florent37/maven/android-nosql/images/download.svg) ](https://bintray.com/florent37/maven/android-nosql/_latestVersion)
 ```java
 dependencies {
