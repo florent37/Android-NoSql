@@ -15,7 +15,7 @@ Lightweight, simple structured NoSQL database for Android
 [ ![Download](https://api.bintray.com/packages/florent37/maven/android-nosql/images/download.svg) ](https://bintray.com/florent37/maven/android-nosql/_latestVersion)
 ```java
 dependencies {
-    compile 'com.github.florent37:android-nosql:1.0.0'
+    implementation 'com.github.florent37:android-nosql:1.0.0'
 }
 ```
 
@@ -116,7 +116,7 @@ noSql.notify("/user/", new Listener() {
 
 # Init
 
-Android-NoSql need to be initialized to store your objets
+Android-NoSql need to be initialized to store your objects
 
 ```java
 public class MainApplication extends Application {
