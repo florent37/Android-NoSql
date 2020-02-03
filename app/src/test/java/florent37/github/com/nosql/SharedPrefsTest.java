@@ -224,7 +224,7 @@ public class SharedPrefsTest {
 
         //Then
         verify(dataSaver, atLeastOnce()).remove(eq("/")); //reset force to add 1
-        assertThat(dataSaver.getNodes()).isEmpty();
+        assertThat(dataSaver.nodes).isEmpty();
     }
 
     @Test
@@ -241,7 +241,7 @@ public class SharedPrefsTest {
         //Then
         verify(dataSaver).remove("/numbers/");
 
-        assertThat(dataSaver.getNodes()).containsAllIn(Arrays.asList("/", "/users"));
+        assertThat(dataSaver.nodes).containsAllIn(Arrays.asList("/", "/users"));
     }
 
     public static class ValueWith implements ArgumentMatcher<NoSql.Value> {

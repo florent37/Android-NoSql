@@ -1,1 +1,3 @@
-include ':app', ':android-nosql', ':android-nosql-paper'
+include ':app',
+        ':android-nosql'
+        //':android-nosql-paper'
