@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.github.florent37.androidnosql.Listener
 import com.github.florent37.androidnosql.NoSqlKt
 import com.github.florent37.androidnosql.NosqlElement
+import com.github.florent37.androidnosql.elementAt
 import florent37.github.com.nosql.model.Car
 import florent37.github.com.nosql.model.House
 import florent37.github.com.nosql.model.User
@@ -36,7 +37,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), CoroutineScope b
                 }
             })
             noSql.put("/user/florent/", user)
-            val userFetched: User? = noSql.get("/user/florent/", User::class.java)
+            val userFetched: User? = noSql.elementAt("/user/florent/")
 
             val textView : TextView = findViewById(R.id.text)
             textView.text = userFetched.toString()

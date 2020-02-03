@@ -35,7 +35,7 @@ object NoSqlKt {
 
     private suspend fun getNodeOrCreate(completeFieldPath: String): NosqlElement.Node {
         val nodeDesc = getNode(completeFieldPath)
-        return getOrCreate(nodeDesc.first, nodeDesc.second)
+        return getOrCreate(nodeDesc.parentNode, nodeDesc.name)
     }
 
     suspend fun remove(path: String): NoSqlKt {
@@ -43,7 +43,7 @@ object NoSqlKt {
             root.removeAll()
         } else {
             val nodeDesc = getNode(path)
-            nodeDesc.first.remove(nodeDesc.second)
+            nodeDesc.parentNode.remove(nodeDesc.name)
         }
         if (autoSave) {
             AndroidNoSql.dataSaver.forEach { dataSaver ->
@@ -89,13 +89,15 @@ object NoSqlKt {
 
     suspend fun get(uri: String): NosqlElement {
         val nodeAndName = getNode(uri)
-        val node = nodeAndName.first
-        val name = nodeAndName.second
-        return node.value(name)
+        val parentNode = nodeAndName.parentNode
+        val name = nodeAndName.name
+        return parentNode.value(name)
     }
 
+    class NodeWithName(val parentNode: NosqlElement.Node, val name : String)
+
     @Throws(NoSqlException::class)
-    suspend fun getNode(uri: String): Pair<NosqlElement.Node, String> {
+    suspend fun getNode(uri: String): NodeWithName {
         var node = root
 
         val nodeDescritption = split(uri)
@@ -104,7 +106,7 @@ object NoSqlKt {
             node = getOrCreate(node, nodeName)
         }
 
-        return Pair(node, nodeDescritption.name)
+        return NodeWithName(node, nodeDescritption.name)
     }
 
     suspend fun load() {
@@ -138,19 +140,19 @@ object NoSqlKt {
     }
 
     suspend fun put(uri: String, value: Any): NoSqlKt {
-        val node_and_name = getNode(uri)
-        val node = node_and_name.first
-        val name = node_and_name.second
+        val nodeAndName = getNode(uri)
+        val parentNode = nodeAndName.parentNode
+        val name = nodeAndName.name
 
         if (value.isValueObject()) {
-            node.put(name, value)
-            notifyListeners(node.path + PATH_SEPARATOR + name)
+            parentNode.put(name, value)
+            notifyListeners(parentNode.path + PATH_SEPARATOR + name)
         } else {
-            getOrCreate(node, name).write(value)
+            getOrCreate(parentNode, name).write(value)
         }
 
         if (autoSave) {
-            node.save(AndroidNoSql.dataSaver)
+            parentNode.save(AndroidNoSql.dataSaver)
         }
 
         return this
@@ -233,4 +235,8 @@ object NoSqlKt {
         }
         return null
     }
+}
+
+suspend inline fun <reified T : Any> NoSqlKt.elementAt(path: String) : T? {
+    return this.get(path, T::class.java)
 }

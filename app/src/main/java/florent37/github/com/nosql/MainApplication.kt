@@ -19,6 +19,7 @@ class MainApplication : Application() {
                     SharedPreferencesDataSaver(getSharedPreferences("test", Context.MODE_PRIVATE)),
                     LogDataSaver("LogDataSaver")
             )
+            AndroidNoSql.clearDataSavers()
         }
     }
 }
