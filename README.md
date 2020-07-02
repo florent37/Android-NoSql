@@ -134,7 +134,7 @@ You can also define the datasavers using initWith, it means you can store your d
 
 # Credits   
 
-Author: Florent Champigny [http://www.florentchampigny.com/](http://www.florentchampigny.com/)
+Author: Florent Champigny 
 
 Blog : [http://www.tutos-android-france.com/](http://www.www.tutos-android-france.com/)
 
